@@ -1,5 +1,5 @@
 const DEVICE_ID = 'b1a0fc95-8236-43be-af6a-cb315d05d75f';
-const API_URL = 'https://web-lamp1.vercel.app/api';
+const API_URL = '/api';
 
 // Состояние
 let currentBrightness = 5;
