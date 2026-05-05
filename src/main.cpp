@@ -11,7 +11,7 @@
 // ==========================================
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
-const char* serverUrl = "https://web-lamp.vercel.app/api/telemetry"; // URL вашего бэкенда на Vercel
+const char* serverUrl = "https://web-lamp1.vercel.app/api/telemetry"; // URL вашего бэкенда на Vercel
 const String deviceId = "b1a0fc95-8236-43be-af6a-cb315d05d75f"; // Уникальный ID устройства в Supabase
 
 // ==========================================
