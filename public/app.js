@@ -6,7 +6,7 @@ let currentBrightness = 5;
 let isAutoMode = true;
 let isPowered = false;
 let lastInteractionTime = 0;
-const COOLDOWN_MS = 40000;
+const COOLDOWN_MS = 60000;
 
 // Элементы управления
 const btnPowerOff = document.getElementById('btn-power-off');
