@@ -2,11 +2,20 @@ const DEVICE_ID = 'b1a0fc95-8236-43be-af6a-cb315d05d75f';
 const API_URL = '/api';
 
 // Состояние
-let currentBrightness = 5;
-let isAutoMode = true;
-let isPowered = false;
-let lastInteractionTime = 0;
-const COOLDOWN_MS = 60000;
+let state = {
+    is_powered: false,
+    is_auto_mode: true,
+    brightness: 5
+};
+
+// Время последнего изменения пользователем для каждого параметра
+let lastChangeTime = {
+    is_powered: 0,
+    is_auto_mode: 0,
+    brightness: 0
+};
+
+const SYNC_LOCK_MS = 10000; // Блокировка синхронизации на 10 сек после нажатия
 
 // Элементы управления
 const btnPowerOff = document.getElementById('btn-power-off');
@@ -28,23 +37,17 @@ const pwmValueEl = document.getElementById('pwm-value');
 const eventCountEl = document.getElementById('event-count');
 const statusDot = document.getElementById('status-dot');
 
-function markInteraction() {
-    lastInteractionTime = Date.now();
-}
-
 // ==========================================
 // 1. Логика API
 // ==========================================
 
 async function sendCommand(params = {}) {
-    markInteraction();
-    
     const data = {
         device_id: DEVICE_ID,
-        is_auto_mode: isAutoMode,
-        brightness: currentBrightness,
-        is_powered: isPowered,
-        ...params // Можно переопределить любые поля (например, threshold)
+        is_auto_mode: state.is_auto_mode,
+        brightness: state.brightness,
+        is_powered: state.is_powered,
+        ...params
     };
 
     try {
@@ -77,83 +80,113 @@ async function fetchLatestData() {
 // ==========================================
 
 function updateUI(data) {
-    // Телеметрия обновляется всегда
+    // 1. Телеметрия (датчики) обновляется ВСЕГДА
     lightLevelEl.innerText = data.light_level;
     pwmValueEl.innerText = data.pwm_value;
     eventCountEl.innerText = data.event_count;
     statusDot.classList.add('status-online');
 
-    // Контролы обновляются только если нет недавнего взаимодействия
-    if (Date.now() - lastInteractionTime < COOLDOWN_MS) return;
+    const now = Date.now();
 
-    isPowered = data.is_powered;
-    isAutoMode = data.is_auto_mode;
-    currentBrightness = data.brightness;
+    // 2. Синхронизация контролов (только если прошло SYNC_LOCK_MS с последнего нажатия)
+    
+    // Питание
+    if (now - lastChangeTime.is_powered > SYNC_LOCK_MS) {
+        state.is_powered = data.is_powered;
+        updatePowerButtons();
+    }
 
-    // Кнопки Питания
-    btnPowerOn.classList.toggle('active', isPowered);
-    btnPowerOff.classList.toggle('active', !isPowered);
-
-    // Кнопки Режима
-    btnModeAuto.classList.toggle('active', isAutoMode);
-    btnModeManual.classList.toggle('active', !isAutoMode);
+    // Режим
+    if (now - lastChangeTime.is_auto_mode > SYNC_LOCK_MS) {
+        state.is_auto_mode = data.is_auto_mode;
+        updateModeButtons();
+    }
 
     // Яркость
-    brightnessValue.innerText = currentBrightness;
-    brightnessSection.classList.toggle('disabled', isAutoMode);
+    if (now - lastChangeTime.brightness > SYNC_LOCK_MS) {
+        state.brightness = data.brightness;
+        brightnessValue.innerText = state.brightness;
+        brightnessSection.classList.toggle('disabled', state.is_auto_mode);
+    }
 }
 
 // ==========================================
 // 3. Обработчики событий
 // ==========================================
 
+function updatePowerButtons() {
+    btnPowerOn.classList.toggle('active', state.is_powered);
+    btnPowerOff.classList.toggle('active', !state.is_powered);
+}
+
+function updateModeButtons() {
+    btnModeAuto.classList.toggle('active', state.is_auto_mode);
+    btnModeManual.classList.toggle('active', !state.is_auto_mode);
+    brightnessSection.classList.toggle('disabled', state.is_auto_mode);
+}
+
 // Питание
-btnPowerOn.addEventListener('click', () => { isPowered = true; updateButtons(); sendCommand(); });
-btnPowerOff.addEventListener('click', () => { isPowered = false; updateButtons(); sendCommand(); });
+btnPowerOn.addEventListener('click', () => { 
+    state.is_powered = true; 
+    lastChangeTime.is_powered = Date.now();
+    updatePowerButtons(); 
+    sendCommand(); 
+});
+btnPowerOff.addEventListener('click', () => { 
+    state.is_powered = false; 
+    lastChangeTime.is_powered = Date.now();
+    updatePowerButtons(); 
+    sendCommand(); 
+});
 
 // Режим
-btnModeAuto.addEventListener('click', () => { isAutoMode = true; updateButtons(); sendCommand(); });
-btnModeManual.addEventListener('click', () => { isAutoMode = false; updateButtons(); sendCommand(); });
+btnModeAuto.addEventListener('click', () => { 
+    state.is_auto_mode = true; 
+    lastChangeTime.is_auto_mode = Date.now();
+    updateModeButtons(); 
+    sendCommand(); 
+});
+btnModeManual.addEventListener('click', () => { 
+    state.is_auto_mode = false; 
+    lastChangeTime.is_auto_mode = Date.now();
+    updateModeButtons(); 
+    sendCommand(); 
+});
 
 // Яркость
 btnBrightUp.addEventListener('click', () => {
-    if (currentBrightness < 10) {
-        currentBrightness++;
-        brightnessValue.innerText = currentBrightness;
+    if (state.brightness < 10) {
+        state.brightness++;
+        lastChangeTime.brightness = Date.now();
+        brightnessValue.innerText = state.brightness;
         sendCommand();
     }
 });
 btnBrightDown.addEventListener('click', () => {
-    if (currentBrightness > 0) {
-        currentBrightness--;
-        brightnessValue.innerText = currentBrightness;
+    if (state.brightness > 0) {
+        state.brightness--;
+        lastChangeTime.brightness = Date.now();
+        brightnessValue.innerText = state.brightness;
         sendCommand();
     }
 });
 
 // Тесты
 btnTestDark.addEventListener('click', () => {
-    // Чтобы тест сработал, лампа должна быть в AUTO
-    isAutoMode = true;
-    updateButtons();
-    sendCommand({ threshold: 4095 }); // Максимальный порог = всегда темно
+    state.is_auto_mode = true;
+    lastChangeTime.is_auto_mode = Date.now();
+    updateModeButtons();
+    sendCommand({ threshold: 4095 });
     alert("Имитация темноты отправлена. В режиме AUTO лампа должна включиться.");
 });
 
 btnTestLight.addEventListener('click', () => {
-    isAutoMode = true;
-    updateButtons();
-    sendCommand({ threshold: 0 }); // Минимальный порог = всегда светло
+    state.is_auto_mode = true;
+    lastChangeTime.is_auto_mode = Date.now();
+    updateModeButtons();
+    sendCommand({ threshold: 0 });
     alert("Имитация света отправлена. В режиме AUTO лампа должна выключиться.");
 });
-
-function updateButtons() {
-    btnPowerOn.classList.toggle('active', isPowered);
-    btnPowerOff.classList.toggle('active', !isPowered);
-    btnModeAuto.classList.toggle('active', isAutoMode);
-    btnModeManual.classList.toggle('active', !isAutoMode);
-    brightnessSection.classList.toggle('disabled', isAutoMode);
-}
 
 // Запуск
 setInterval(fetchLatestData, 2000);

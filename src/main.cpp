@@ -135,8 +135,8 @@ void loop() {
     lastDisplayTime = currentMillis;
   }
   
-  // Отправка телеметрии каждые 3 секунды
-  if (currentMillis - lastTelemetryTime >= 3000) {
+  // Отправка телеметрии каждую секунду (для мгновенной синхронизации с сайтом)
+  if (currentMillis - lastTelemetryTime >= 1000) {
     sendTelemetry();
     lastTelemetryTime = currentMillis;
   }
