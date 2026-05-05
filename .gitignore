@@ -1,0 +1,7 @@
+node_modules/
+.env
+.vercel/
+.pio/
+.vscode/
+compile_commands.json
+*.log

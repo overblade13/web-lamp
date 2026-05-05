@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LUMO ONE — Интеллектуальное Освещение</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@300;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="glow-bg"></div>
+    
+    <div class="container">
+        <header>
+            <h1 class="logo">LUMO ONE</h1>
+            <p class="tagline">Pure light, essential form.</p>
+        </header>
+
+        <main class="dashboard">
+            <!-- Управление -->
+            <section class="card control-card">
+                <div class="card-header">
+                    <h2>Управление</h2>
+                    <div class="status-indicator" id="status-dot"></div>
+                </div>
+
+                <!-- Питание -->
+                <div class="control-row">
+                    <span class="label">Питание</span>
+                    <div class="button-group">
+                        <button id="btn-power-off" class="btn-toggle">OFF</button>
+                        <button id="btn-power-on" class="btn-toggle">ON</button>
+                    </div>
+                </div>
+
+                <!-- Режим -->
+                <div class="control-row">
+                    <span class="label">Режим</span>
+                    <div class="button-group">
+                        <button id="btn-mode-manual" class="btn-toggle">MANUAL</button>
+                        <button id="btn-mode-auto" class="btn-toggle">AUTO</button>
+                    </div>
+                </div>
+
+                <!-- Яркость (Кнопки +/-) -->
+                <div class="brightness-section" id="brightness-section">
+                    <div class="brightness-header">
+                        <span class="label">Яркость</span>
+                        <span id="brightness-value" class="value-display">5</span>
+                    </div>
+                    <div class="stepper">
+                        <button id="btn-bright-down" class="btn-step">−</button>
+                        <button id="btn-bright-up" class="btn-step">+</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Блок Тестирования -->
+            <section class="card test-card">
+                <div class="test-badge">ТЕСТОВЫЙ РЕЖИМ</div>
+                <h2>Проверка авто-режима</h2>
+                <p class="test-desc">Имитация датчика освещенности (порог срабатывания)</p>
+                <div class="test-actions">
+                    <button id="test-dark" class="btn-test">Имитация темноты</button>
+                    <button id="test-light" class="btn-test">Имитация света</button>
+                </div>
+            </section>
+
+            <!-- Телеметрия -->
+            <section class="card stats-card">
+                <h2>Статистика</h2>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <span class="stat-label">Свет</span>
+                        <span class="stat-number" id="light-level">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">ШИМ</span>
+                        <span class="stat-number" id="pwm-value">0</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-label">События</span>
+                        <span class="stat-number" id="event-count">0</span>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>Система интеллектуального управления освещением &copy; 2026</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
