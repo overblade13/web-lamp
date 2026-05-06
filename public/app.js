@@ -1,5 +1,5 @@
 const DEVICE_ID = 'b1a0fc95-8236-43be-af6a-cb315d05d75f';
-const API_URL = '/api';
+const API_URL = 'http://localhost:3000/api';
 
 // Состояние
 let state = {
@@ -15,7 +15,7 @@ let lastChangeTime = {
     brightness: 0
 };
 
-const SYNC_LOCK_MS = 10000; // Блокировка синхронизации на 10 сек после нажатия
+const SYNC_LOCK_MS = 6000; // Блокировка синхронизации на 6 сек (возвращено по просьбе пользователя)
 
 // Элементы управления
 const btnPowerOff = document.getElementById('btn-power-off');

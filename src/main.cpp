@@ -1,5 +1,4 @@
 #include <WiFi.h>
-#include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <Preferences.h>
@@ -12,7 +11,7 @@
 // ==========================================
 const char* ssid = "Wokwi-GUEST";
 const char* password = "";
-const char* serverUrl = "https://web-lamp.vercel.app/api/telemetry"; // Боевой URL на Vercel (HTTPS)
+const char* serverUrl = "http://192.168.0.103:3000/api/telemetry"; // Локальный сервер (IP вашего компьютера)
 const String deviceId = "b1a0fc95-8236-43be-af6a-cb315d05d75f"; // Уникальный ID устройства в Supabase
 
 // ==========================================
@@ -135,8 +134,8 @@ void loop() {
     lastDisplayTime = currentMillis;
   }
   
-  // Отправка телеметрии каждую секунду (для мгновенной синхронизации с сайтом)
-  if (currentMillis - lastTelemetryTime >= 1000) {
+  // Отправка телеметрии каждые 3 секунды
+  if (currentMillis - lastTelemetryTime >= 3000) {
     sendTelemetry();
     lastTelemetryTime = currentMillis;
   }
@@ -330,11 +329,8 @@ void updateDisplay() {
 // ==========================================
 void sendTelemetry() {
   if (WiFi.status() == WL_CONNECTED) {
-    WiFiClientSecure client;
-    client.setInsecure(); // Отключаем проверку SSL для работы в симуляторе
-    
     HTTPClient http;
-    http.begin(client, serverUrl);
+    http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
     
     // Формируем JSON
